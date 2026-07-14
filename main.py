@@ -29,7 +29,7 @@ def install_random_pycomic():
     img_response = requests.get(random_image)
     with open(save_pycomic_directory, 'wb') as file:
         file.write(img_response.content)
-    print("Комикс сохранен как comic.png")
+    
 
 
 def upload_to_telegram(telegram_token, chanel_id):
