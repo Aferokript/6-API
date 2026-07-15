@@ -5,51 +5,53 @@ import telebot
 from dotenv import load_dotenv
 
 
-def install_random_pycomic():
+def download_first_page():
     url = 'https://xkcd.com/info.0.json'
-
-    comic_directory = r'C:\Users\Admin\Python\comics'
-    os.makedirs(comic_directory, exist_ok=True)
-
-    save_pycomic_directory = os.path.join(comic_directory, 'comics')
 
     response = requests.get(url)
     response.raise_for_status()
 
     first_image = response.json()
-    comic_url = first_image['img']
+
     comic_page = first_image['num']
+    return comic_page
+
+
+def download_random_page(path_to_directory, comic_page):
     random_page = random.randint(1, comic_page)
     random_number_url = f'https://xkcd.com/{random_page}/info.0.json'
     response = requests.get(random_number_url)
     response.raise_for_status()
 
     random_page = response.json()
-    random_image = random_page['img']
-    img_response = requests.get(random_image)
-    with open(save_pycomic_directory, 'wb') as file:
+    random_url = random_page['img']
+    img_response = requests.get(random_url)
+    img_response.raise_for_status()
+
+    with open(path_to_directory, 'wb') as file:
         file.write(img_response.content)
-    
 
 
-def upload_to_telegram(telegram_token, chanel_id):
+def upload_to_tgchanel(path_to_directory, telegram_token, channel_id):
     bot = telebot.TeleBot(telegram_token)
-    install_random_pycomic()
-    bot.send_photo(chanel_id, photo=open(r'C:\Users\Admin\Python\comics\comics', 'rb'))
+    bot.send_photo(channel_id, photo=open(path_to_directory, 'rb'))
 
 
 def main():
     load_dotenv()
 
+    path_to_directory = os.getenv('PATH_TO_DIRECTORY')
     telegram_token = os.getenv('TELEGRAM_TOKEN')
-    chanel_id = os.getenv('CHANEL_ID')
+    channel_id = os.getenv('CHANNEL_ID')
 
-
-    upload_to_telegram(telegram_token, chanel_id)
-    os.remove(r'C:\Users\Admin\Python\comics\comics')
+    try:
+        first_image = download_first_page()
+        random_page = download_random_page(path_to_directory, first_image)
+        upload_to_telegram(path_to_directory, telegram_token, channel_id)
+        os.remove(path_to_directory)
+    except requests.exceptions.RequestException:
+        print('Ошибка на стороне телеграмма. Приносим свои извинения')
 
 
 if __name__ == '__main__':
     main()
-
-
