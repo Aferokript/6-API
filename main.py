@@ -40,17 +40,19 @@ def upload_to_tgchanel(path_to_directory, telegram_token, channel_id):
 def main():
     load_dotenv()
 
-    path_to_directory = os.getenv('PATH_TO_DIRECTORY')
-    telegram_token = os.getenv('TELEGRAM_TOKEN')
-    channel_id = os.getenv('CHANNEL_ID')
+    path_to_directory = os.environ['PATH_TO_DIRECTORY']
+    telegram_token = os.environ['TELEGRAM_TOKEN']
+    channel_id = os.environ['CHANNEL_ID']
 
     try:
         first_image = download_first_page()
         random_page = download_random_page(path_to_directory, first_image)
-        upload_to_telegram(path_to_directory, telegram_token, channel_id)
-        os.remove(path_to_directory)
+        upload_to_tgchanel(path_to_directory, telegram_token, channel_id)
     except requests.exceptions.RequestException:
         print('Ошибка на стороне телеграмма. Приносим свои извинения')
+
+    finally:
+        os.remove(path_to_directory)
 
 
 if __name__ == '__main__':
